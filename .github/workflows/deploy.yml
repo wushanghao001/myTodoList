@@ -1,0 +1,34 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 推送到 main 分支就自动部署
+  push:
+    branches: [ main ]
+
+# 权限必须给
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 如果你是 纯静态网站（HTML/CSS/JS），删除下面 3 行
+      - name: Install dependencies
+        run: npm install
+      - name: Build project
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 这里改成你要发布的文件夹：dist / build / public 都行
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

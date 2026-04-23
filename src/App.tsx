@@ -440,226 +440,259 @@ function App() {
           ) : (
             <>
               {/* Batch Operations Bar */}
-              {selectedTodos.length > 0 && (
-                <div className="bg-white rounded-xl shadow-md shadow-purple-100/30 p-3 flex justify-between items-center">
-                  <span className="text-sm text-gray-600">已选择 {selectedTodos.length} 个任务</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={batchComplete}
-                      className="px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      标记完成
-                    </button>
-                    <button
-                      onClick={batchDelete}
-                      className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      批量删除
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              {/* Select All Checkbox */}
-              <div className="bg-white rounded-xl shadow-md shadow-purple-100/30 p-4">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedTodos.length === filteredTodos.length && filteredTodos.length > 0}
-                    onChange={selectAllTodos}
-                    className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="text-sm font-medium text-gray-600">全选</span>
+              <div className="bg-white rounded-xl shadow-md shadow-purple-100/30 p-3 flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  {selectedTodos.length > 0 ? 
+                    `已选择 ${selectedTodos.length} 个任务` : 
+                    `今日任务`
+                  }
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllTodos}
+                    title={selectedTodos.length === filteredTodos.length && filteredTodos.length > 0 ? "取消全选" : "全选"}
+                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                  >
+                    <span>📋</span>
+                    <span>{selectedTodos.length === filteredTodos.length && filteredTodos.length > 0 ? "取消全选" : "全选"}</span>
+                  </button>
+                  {selectedTodos.length > 0 && (
+                    <>
+                      <button
+                        onClick={batchComplete}
+                        className="px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        标记完成
+                      </button>
+                      <button
+                        onClick={batchDelete}
+                        className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        批量删除
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               
-              {/* Todo Items */}
-              {filteredTodos.map((todo) => (
-                <div
-                  key={todo.id}
-                  className={`group bg-white rounded-xl shadow-md shadow-purple-100/30 p-4 transition-all duration-200 hover:shadow-lg hover:shadow-purple-100/50 ${
-                    todo.completed ? 'opacity-70' : ''
-                  }`}
-                >
-                  {editingTodo && editingTodo.id === todo.id ? (
-                    <div className="space-y-3">
-                      <div className="flex gap-3">
-                        <input
-                          type="text"
-                          value={editText}
-                          onChange={(e) => setEditText(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                          className="flex-1 px-3 py-2 rounded-lg border-2 border-purple-300 focus:outline-none text-gray-700"
-                        />
-                      </div>
-                      
-                      {/* Edit Priority Selector */}
-                      <div className="flex gap-3">
-                        <span className="text-sm font-medium text-gray-600 flex items-center">优先级:</span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setEditPriority('high')}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                              editPriority === 'high' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            高
-                          </button>
-                          <button
-                            onClick={() => setEditPriority('medium')}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                              editPriority === 'medium' ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            中
-                          </button>
-                          <button
-                            onClick={() => setEditPriority('low')}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                              editPriority === 'low' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            低
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {/* Edit Tags Input */}
-                      <div className="flex gap-3">
-                        <span className="text-sm font-medium text-gray-600 flex items-center">标签:</span>
-                        <div className="flex-1 flex gap-2 flex-wrap">
-                          {/* All available tags */}
-                          {allTags.map((tag) => {
-                            // Check if any todo is using this tag
-                            const isTagUsed = todos.some(todo => todo.tags.includes(tag));
-                            
-                            return (
-                              <div key={tag} className="relative group">
-                                <button
-                                  onClick={() => setEditTags(prev =>
-                                    prev.includes(tag)
-                                      ? prev.filter(t => t !== tag)
-                                      : [...prev, tag]
-                                  )}
-                                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                                    editTags.includes(tag) ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                  }`}
-                                >
-                                  {tag}
-                                </button>
-                                {!isTagUsed && (
-                                  <button
-                                    onClick={() => setAllTags(allTags.filter(t => t !== tag))}
-                                    className="absolute -top-1 -right-1 w-4 h-4 bg-gray-200 hover:bg-red-200 text-gray-600 hover:text-red-600 rounded-full text-xs flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                                    title="删除标签"
-                                  >
-                                    ×
-                                  </button>
-                                )}
-                              </div>
-                            );
-                          })}
-                          
-                          {/* Add new tag */}
-                          <button
-                            onClick={() => {
-                              const tag = prompt('请输入新标签名称:');
-                              if (tag && tag.trim() && !allTags.includes(tag.trim())) {
-                                setAllTags([...allTags, tag.trim()]);
-                              }
-                            }}
-                            className="px-3 py-1 rounded-full text-xs font-medium transition-all bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-dashed border-gray-300 hover:border-purple-300 flex items-center gap-1"
-                            title="添加标签"
-                          >
-                            <span>+</span>
-                            <span>添加</span>
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {/* Edit Actions */}
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={cancelEdit}
-                          className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-                        >
-                          取消
-                        </button>
-                        <button
-                          onClick={saveEdit}
-                          className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          保存
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedTodos.includes(todo.id)}
-                        onChange={() => toggleSelectTodo(todo.id)}
-                        className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 mt-1"
-                      />
-                      <button
-                        onClick={() => toggleTodo(todo.id)}
-                        className="flex-shrink-0 transition-transform duration-200 hover:scale-110 mt-1"
+              {/* Todo Table */}
+              <div className="bg-white rounded-xl shadow-md shadow-purple-100/30 overflow-hidden">
+                <table className="w-full table-auto">
+                  {/* Table Header */}
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left w-12 whitespace-nowrap"></th>
+                      <th className="px-4 py-3 text-left w-12 whitespace-nowrap"></th>
+                      <th className="px-4 py-3 text-left whitespace-nowrap text-purple-700 font-medium">任务内容</th>
+                      <th className="px-4 py-3 text-left w-24 whitespace-nowrap text-purple-700 font-medium">优先级</th>
+                      <th className="px-4 py-3 text-left whitespace-nowrap text-purple-700 font-medium">标签</th>
+                      <th className="px-4 py-3 text-right w-24 whitespace-nowrap"></th>
+                    </tr>
+                  </thead>
+                  
+                  {/* Table Body */}
+                  <tbody>
+                    {filteredTodos.map((todo) => (
+                      <tr
+                        key={todo.id}
+                        className={`group border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                          todo.completed ? 'opacity-70' : ''
+                        }`}
                       >
-                        {todo.completed ? (
-                          <CheckCircle2 className="text-emerald-500" size={24} />
+                        {editingTodo && editingTodo.id === todo.id ? (
+                          <td colSpan={6} className="p-4">
+                            <div className="space-y-3">
+                              <div className="flex gap-3">
+                                <input
+                                  type="text"
+                                  value={editText}
+                                  onChange={(e) => setEditText(e.target.value)}
+                                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                                  className="flex-1 px-3 py-2 rounded-lg border-2 border-purple-300 focus:outline-none text-gray-700"
+                                />
+                              </div>
+                              
+                              {/* Edit Priority Selector */}
+                              <div className="flex gap-3">
+                                <span className="text-sm font-medium text-gray-600 flex items-center">优先级:</span>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => setEditPriority('high')}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                                      editPriority === 'high' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    高
+                                  </button>
+                                  <button
+                                    onClick={() => setEditPriority('medium')}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                                      editPriority === 'medium' ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    中
+                                  </button>
+                                  <button
+                                    onClick={() => setEditPriority('low')}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                                      editPriority === 'low' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    低
+                                  </button>
+                                </div>
+                              </div>
+                              
+                              {/* Edit Tags Input */}
+                              <div className="flex gap-3">
+                                <span className="text-sm font-medium text-gray-600 flex items-center">标签:</span>
+                                <div className="flex-1 flex gap-2 flex-wrap">
+                                  {/* All available tags */}
+                                  {allTags.map((tag) => {
+                                    // Check if any todo is using this tag
+                                    const isTagUsed = todos.some(t => t.tags.includes(tag));
+                                    
+                                    return (
+                                      <div key={tag} className="relative group">
+                                        <button
+                                          onClick={() => setEditTags(prev =>
+                                            prev.includes(tag)
+                                              ? prev.filter(t => t !== tag)
+                                              : [...prev, tag]
+                                          )}
+                                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                                            editTags.includes(tag) ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                          }`}
+                                        >
+                                          {tag}
+                                        </button>
+                                        {!isTagUsed && (
+                                          <button
+                                            onClick={() => setAllTags(allTags.filter(t => t !== tag))}
+                                            className="absolute -top-1 -right-1 w-4 h-4 bg-gray-200 hover:bg-red-200 text-gray-600 hover:text-red-600 rounded-full text-xs flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                                            title="删除标签"
+                                          >
+                                            ×
+                                          </button>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                  
+                                  {/* Add new tag */}
+                                  <button
+                                    onClick={() => {
+                                      const tag = prompt('请输入新标签名称:');
+                                      if (tag && tag.trim() && !allTags.includes(tag.trim())) {
+                                        setAllTags([...allTags, tag.trim()]);
+                                      }
+                                    }}
+                                    className="px-3 py-1 rounded-full text-xs font-medium transition-all bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-dashed border-gray-300 hover:border-purple-300 flex items-center gap-1"
+                                    title="添加标签"
+                                  >
+                                    <span>+</span>
+                                    <span>添加</span>
+                                  </button>
+                                </div>
+                              </div>
+                              
+                              {/* Edit Actions */}
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={cancelEdit}
+                                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                  取消
+                                </button>
+                                <button
+                                  onClick={saveEdit}
+                                  className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
+                                >
+                                  保存
+                                </button>
+                              </div>
+                            </div>
+                          </td>
                         ) : (
-                          <Circle className="text-gray-300 hover:text-purple-400" size={24} />
+                          <>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={selectedTodos.includes(todo.id)}
+                                onChange={() => toggleSelectTodo(todo.id)}
+                                className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                              />
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <button
+                                onClick={() => toggleTodo(todo.id)}
+                                className="flex-shrink-0 transition-transform duration-200 hover:scale-110"
+                              >
+                                {todo.completed ? (
+                                  <CheckCircle2 className="text-emerald-500" size={24} />
+                                ) : (
+                                  <Circle className="text-gray-300 hover:text-purple-400" size={24} />
+                                )}
+                              </button>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`text-gray-700 transition-all duration-200 ${
+                                  todo.completed
+                                    ? 'line-through text-gray-400'
+                                    : ''
+                                }`}
+                              >
+                                {todo.text}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                  todo.priority === 'high' ? 'bg-red-100 text-red-600' :
+                                  todo.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                                  'bg-green-100 text-green-600'
+                                }`}
+                              >
+                                {todo.priority === 'high' ? '高' :
+                                 todo.priority === 'medium' ? '中' : '低'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex gap-1 flex-wrap">
+                                {todo.tags.map((tag, index) => (
+                                  <span
+                                    key={index}
+                                    className="text-xs bg-purple-50 text-purple-700 rounded-full px-2 py-1"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-right whitespace-nowrap">
+                              <div className="flex gap-1 justify-end">
+                                <button
+                                  onClick={() => startEdit(todo)}
+                                  className="flex-shrink-0 p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => deleteTodo(todo.id)}
+                                  className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </td>
+                          </>
                         )}
-                      </button>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={`text-gray-700 transition-all duration-200 ${
-                              todo.completed
-                                ? 'line-through text-gray-400'
-                                : ''
-                            }`}
-                          >
-                            {todo.text}
-                          </span>
-                          <span
-                            className={`text-xs font-medium px-2 py-1 rounded-full ${
-                              todo.priority === 'high' ? 'bg-red-100 text-red-600' :
-                              todo.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                              'bg-green-100 text-green-600'
-                            }`}
-                          >
-                            {todo.priority === 'high' ? '高' :
-                             todo.priority === 'medium' ? '中' : '低'}
-                          </span>
-                          {todo.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="text-xs bg-purple-50 text-purple-700 rounded-full px-2 py-1"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => startEdit(todo)}
-                          className="flex-shrink-0 p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => deleteTodo(todo.id)}
-                          className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
         </div>
